@@ -11,29 +11,33 @@
 </script>
 
 <div class="slice-wrapper" {style}>
-  {#each slicer.slicePositions as pos, index}
-    <input
-      type="range"
-      on:focus={(e) => e.target.blur()}
-      on:mousemove={(e) => updateSliceIndex(e, index)}
-      value={slicer.slicePositions[index]}
-      min="0"
-      step="1"
-      max={slicer.slicePositions.length - 1}
-    />
-  {/each}
+  <div>
+    {#each slicer.slicePositions as pos, index}
+      <input
+        type="range"
+        on:focus={(e) => e.target.blur()}
+        on:mousemove={(e) => updateSliceIndex(e, index)}
+        value={slicer.slicePositions[index]}
+        min="0"
+        step="1"
+        max={slicer.slicePositions.length - 1}
+      />
+    {/each}
+  </div>
 
-  {#each slicer.sliceBankPositions as pos, index}
-    <input
-      type="range"
-      on:focus={(e) => e.target.blur()}
-      on:mousemove={(e) => updateBankPosition(e, index)}
-      value={slicer.sliceBankPositions[index]}
-      min="0"
-      step="1"
-      max={slicer.sliceBanks.length - 1}
-    />
-  {/each}
+  <div style="margin-left: 1rem">
+    {#each slicer.sliceBankPositions as pos, index}
+      <input
+        type="range"
+        on:focus={(e) => e.target.blur()}
+        on:mousemove={(e) => updateBankPosition(e, index)}
+        value={slicer.sliceBankPositions[index]}
+        min="0"
+        step="1"
+        max={slicer.sliceBanks.length - 1}
+      />
+    {/each}
+  </div>
 </div>
 
 <style>

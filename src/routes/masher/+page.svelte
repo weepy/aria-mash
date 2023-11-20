@@ -7,7 +7,7 @@
 
   let context;
 
-  let slicers = $state([]);
+  let slicers = $state(null);
 
   async function createSlicer(url) {
     const slicer = new Slicer({
@@ -28,12 +28,24 @@
     return slicer;
   }
 
+  let comboEl = $state();
+
   async function load() {
     context = new AudioContext();
 
-    const slicer1 = await createSlicer("/audio/120bpm/c_major/bass/2.ogg");
-    const slicer2 = await createSlicer("/audio/120bpm/c_major/drums/2.ogg");
-    const slicer3 = await createSlicer("/audio/120bpm/c_major/leads/2.ogg");
+    slicers = [];
+
+    const p = comboEl.value.split("");
+
+    const slicer1 = await createSlicer(
+      `/audio/120bpm/c_major/bass/${p[0]}.ogg`
+    );
+    const slicer2 = await createSlicer(
+      `/audio/120bpm/c_major/drums/${p[1]}.ogg`
+    );
+    const slicer3 = await createSlicer(
+      `/audio/120bpm/c_major/leads/${p[2]}.ogg`
+    );
 
     slicers = [slicer1, slicer2, slicer3];
   }
@@ -46,12 +58,48 @@
   }
 </script>
 
-<button onclick={load}> load </button>
+<!-- {#each slicers as slicer, index} -->
+{#if slicers?.length == 3}
+  <h3>Bass</h3>
+  <SlicerView slicer={slicers[0]} style="filter: hue-rotate(90deg)" />
 
-<button onclick={play}> play </button>
+  <h3>Drums</h3>
+  <SlicerView slicer={slicers[1]} style="filter: hue-rotate(45deg)" />
 
-<button onclick={stop}> stop </button>
+  <h3>Lead</h3>
+  <SlicerView slicer={slicers[2]} />
+  <br />
+  <button onclick={play}>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="32"
+      height="32"
+      viewBox="0 0 24 24"
+      ><path fill="currentColor" d="M8 19V5l11 7l-11 7Z" /></svg
+    >
+  </button>
 
-{#each slicers as slicer, index}
-  <SlicerView {slicer} />
-{/each}
+  <button onclick={stop}>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="32"
+      height="32"
+      viewBox="0 0 24 24"><path fill="currentColor" d="M6 18V6h12v12H6Z" /></svg
+    >
+  </button>
+{:else if slicers}
+  <h3>Loading</h3>
+{:else}
+  <input type="text" value="111" bind:this={comboEl} />
+  <button onclick={load}>Load</button>
+  <p>Which set of sample to play. Each digit can be 1-5.</p>
+{/if}
+
+<!-- {/each} -->
+
+<style>
+  h3,
+  p {
+    font-family: arial;
+  }
+</style>
