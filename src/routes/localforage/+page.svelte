@@ -1,14 +1,6 @@
-<!-- <script src="./main.js"></script> -->
-
 <script>
-  import {
-    getRemoteAudio,
-    // objectToAudioBuffer,
-    // audioBufferToObject,
-    playBuffer2,
-  } from "$lib/utils.js";
+  import { getRemoteAudio, playBuffer2 } from "$lib/utils.js";
 
-  // import "$lib/utils.js";
   import localforage from "localforage";
 
   import { onMount } from "svelte";

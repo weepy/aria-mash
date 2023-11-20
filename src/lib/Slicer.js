@@ -5,15 +5,19 @@ export default class Slicer {
         this.context = context
         this.sliceLength = Math.floor(sliceLength)
 
-        this.sliceSlots = []
-        this.slicePositions = new Array(numSlices)
+        this.sliceBanks = []
 
-        this.slicePositions.forEach((slice, index) => {
-            this.slicePositions[index] = 0
-        })
+
+        this.slicePositions = []
+        this.sliceBankPositions = []
+
+        for (let i = 0; i < numSlices; i++) {
+            this.slicePositions[i] = i
+            this.sliceBankPositions[i] = 0
+        }
     }
 
-    loadBuffer(slot, buffer) {
+    loadBuffer(bankIndex, buffer) {
 
         // this.buffer = buffer
 
@@ -22,13 +26,14 @@ export default class Slicer {
             fadeBufferStartAndEnd(slice)
         })
 
-        this.sliceSlots[slot] = slices
+        this.sliceBanks[bankIndex] = slices
 
-        this.slicePositions = []
+        // this.slicePositions = []
 
-        slices.forEach((slice, index) => {
-            this.slicePositions[index] = 0
-        })
+        // slices.forEach((slice, index) => {
+        //     this.slicePositions[index] = 0
+        // })
+
 
     }
 
@@ -44,43 +49,22 @@ export default class Slicer {
         this.playing = false
     }
 
-
     _playNextSlice() {
 
         if (!this.playing) {
             return
         }
-
-
-
-        if (this.slicePos >= this.sliceSlots[0].length) {
+        if (this.slicePos >= this.slicePositions.length) {
             this.slicePos = 0
         }
 
-        // const chanceOfRandomSlot = 0.15
+        let bankIndex = this.sliceBankPositions[this.slicePos]
 
-        let slotIndex = 0
-
-
-        const slices = this.sliceSlots[slotIndex]
-
+        const slices = this.sliceBanks[bankIndex]
 
         let sliceIndex = this.slicePositions[this.slicePos]
 
-
-        const slice = slices[sliceIndex]
-
-        // let rate = 1
-
-        // const chanceOfRandomPitch = 0.1
-
-        // const rnd = Math.random()
-        // if (rnd < chanceOfRandomPitch) {
-        //     rate = 0.5
-        // }
-        // else if (rnd < chanceOfRandomPitch * 2) {
-        //     rate = 2
-        // }
+        const slice = slices[sliceIndex % slices.length]
 
 
         this.playerNode = playBufferSync(this.context, slice, 1, () => {

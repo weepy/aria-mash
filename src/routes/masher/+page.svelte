@@ -3,22 +3,20 @@
   import { stretchBuffer } from "$lib/rubberband.js";
 
   import Slicer from "$lib/Slicer.js";
-  //   import { get } from "svelte/store";
+  import SlicerView from "./SlicerView.svelte";
+
   let context;
 
-  let slicer = $state();
-  async function load() {
-    context = new AudioContext();
-    slicer = new Slicer({
+  let slicers = $state([]);
+
+  async function createSlicer(url) {
+    const slicer = new Slicer({
       context,
       sliceLength: 0.5 * 44100,
       numSlices: 16,
     });
 
-    const buffer = await getRemoteAudio(
-      "/audio/120bpm/c_major/bass/2.ogg",
-      context
-    );
+    const buffer = await getRemoteAudio(url, context);
 
     const fastBuffer = await stretchBuffer(buffer, { speed: 2 });
 
@@ -26,29 +24,25 @@
     slicer.loadBuffer(1, reverseAudioBuffer(buffer));
     slicer.loadBuffer(2, fastBuffer);
     slicer.loadBuffer(3, reverseAudioBuffer(fastBuffer));
-    // slicer.start();
+
+    return slicer;
+  }
+
+  async function load() {
+    context = new AudioContext();
+
+    const slicer1 = await createSlicer("/audio/120bpm/c_major/bass/2.ogg");
+    const slicer2 = await createSlicer("/audio/120bpm/c_major/drums/2.ogg");
+    const slicer3 = await createSlicer("/audio/120bpm/c_major/leads/2.ogg");
+
+    slicers = [slicer1, slicer2, slicer3];
   }
 
   function play() {
-    slicer.play();
+    slicers.forEach((s) => s.play());
   }
   function stop() {
-    slicer.stop();
-  }
-  let isDragging = false;
-
-  function startDrag() {
-    isDragging = true;
-  }
-
-  function stopDrag() {
-    isDragging = false;
-  }
-
-  function updateValue(e, index) {
-    if (isDragging) {
-      slicer.slicePositions[index] = e.target.valueAsNumber;
-    }
+    slicers.forEach((s) => s.stop());
   }
 </script>
 
@@ -58,36 +52,6 @@
 
 <button onclick={stop}> stop </button>
 
-{#if slicer}
-  <div
-    class="slice-wrapper"
-    on:mousedown={startDrag}
-    on:mouseup={stopDrag}
-    on:mouseleave={stopDrag}
-  >
-    {#each slicer.slicePositions as pos, index}
-      <input
-        type="range"
-        on:focus={(e) => e.target.blur()}
-        on:mousemove={(e) => updateValue(e, index)}
-        bind:value={slicer.slicePositions[index]}
-        min="0"
-        step="1"
-        max={slicer.slicePositions.length - 1}
-      />
-    {/each}
-  </div>
-{/if}
-
-<style>
-  .slice-wrapper {
-    display: flex;
-    margin-top: 10px;
-  }
-  [type="range"] {
-    appearance: slider-vertical;
-    margin: 0;
-    padding: 0;
-    width: 20px;
-  }
-</style>
+{#each slicers as slicer, index}
+  <SlicerView {slicer} />
+{/each}
