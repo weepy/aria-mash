@@ -7,48 +7,62 @@
 
   let context;
 
-  let slicers = $state(null);
+  let slicers = $state([]);
 
   async function createSlicer(url) {
-    const slicer = new Slicer({
-      context,
-      sliceLength: 0.5 * 44100,
-      numSlices: 16,
-    });
-
-    const buffer = await getRemoteAudio(url, context);
-
-    const fastBuffer = await stretchBuffer(buffer, { speed: 2 });
-
-    slicer.loadBuffer(0, buffer);
-    slicer.loadBuffer(1, reverseAudioBuffer(buffer));
-    slicer.loadBuffer(2, fastBuffer);
-    slicer.loadBuffer(3, reverseAudioBuffer(fastBuffer));
+    // slicer.loadBuffer(1, reverseAudioBuffer(buffer));
+    // slicer.loadBuffer(2, fastBuffer);
+    // slicer.loadBuffer(3, reverseAudioBuffer(fastBuffer));
 
     return slicer;
   }
 
-  let comboEl = $state();
+  let sampleNums = $state([]);
 
   async function load() {
     context = new AudioContext();
 
     slicers = [];
 
-    const p = comboEl.value.split("");
+    // const p = comboEl.value.split("");
 
-    const slicer1 = await createSlicer(
-      `/audio/120bpm/c_major/bass/${p[0]}.ogg`
-    );
-    const slicer2 = await createSlicer(
-      `/audio/120bpm/c_major/drums/${p[1]}.ogg`
-    );
-    const slicer3 = await createSlicer(
-      `/audio/120bpm/c_major/leads/${p[2]}.ogg`
-    );
+    const slicer1 = new Slicer({
+      context,
+      sliceLength: 0.5 * 44100,
+      numSlices: 16,
+    });
+
+    const slicer2 = new Slicer({
+      context,
+      sliceLength: 0.5 * 44100,
+      numSlices: 16,
+    });
+
+    const slicer3 = new Slicer({
+      context,
+      sliceLength: 0.5 * 44100,
+      numSlices: 16,
+    });
 
     slicers = [slicer1, slicer2, slicer3];
+    sampleNums = [1, 1, 1];
   }
+
+  $effect(async () => {
+    await slicers[0]?.loadUrl(
+      `/audio/120bpm/c_major/bass/${sampleNums[0]}.ogg`
+    );
+  });
+  $effect(async () => {
+    await slicers[1]?.loadUrl(
+      `/audio/120bpm/c_major/drums/${sampleNums[1]}.ogg`
+    );
+  });
+  $effect(async () => {
+    await slicers[2]?.loadUrl(
+      `/audio/120bpm/c_major/leads/${sampleNums[2]}.ogg`
+    );
+  });
 
   function play() {
     slicers.forEach((s) => s.play());
@@ -60,13 +74,23 @@
 
 <!-- {#each slicers as slicer, index} -->
 {#if slicers?.length == 3}
-  <h3>Bass</h3>
+  <h3>
+    Bass
+    <input bind:value={sampleNums[0]} type="range" min="1" max="5" />
+  </h3>
+
   <SlicerView slicer={slicers[0]} style="filter: hue-rotate(90deg)" />
 
-  <h3>Drums</h3>
+  <h3>
+    Drums
+    <input bind:value={sampleNums[1]} type="range" min="1" max="5" />
+  </h3>
   <SlicerView slicer={slicers[1]} style="filter: hue-rotate(45deg)" />
 
-  <h3>Lead</h3>
+  <h3>
+    Lead
+    <input bind:value={sampleNums[2]} type="range" min="1" max="5" />
+  </h3>
   <SlicerView slicer={slicers[2]} />
   <br />
   <button onclick={play}>
@@ -87,12 +111,8 @@
       viewBox="0 0 24 24"><path fill="currentColor" d="M6 18V6h12v12H6Z" /></svg
     >
   </button>
-{:else if slicers}
-  <h3>Loading</h3>
 {:else}
-  <input type="text" value="111" bind:this={comboEl} />
   <button onclick={load}>Load</button>
-  <p>Which set of sample to play. Each digit can be 1-5.</p>
 {/if}
 
 <!-- {/each} -->
