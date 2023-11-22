@@ -1,21 +1,10 @@
 <script>
-  import { getRemoteAudio, reverseAudioBuffer } from "$lib/utils.js";
-  import { stretchBuffer } from "$lib/rubberband.js";
-
   import Slicer from "$lib/Slicer.js";
   import SlicerView from "./SlicerView.svelte";
 
   let context;
 
   let slicers = $state([]);
-
-  async function createSlicer(url) {
-    // slicer.loadBuffer(1, reverseAudioBuffer(buffer));
-    // slicer.loadBuffer(2, fastBuffer);
-    // slicer.loadBuffer(3, reverseAudioBuffer(fastBuffer));
-
-    return slicer;
-  }
 
   let sampleNums = $state([]);
 
@@ -28,6 +17,7 @@
 
     const slicer1 = new Slicer({
       context,
+      // deltaMode: true,
       sliceLength: 0.5 * 44100,
       numSlices: 16,
     });
@@ -118,8 +108,7 @@
 <!-- {/each} -->
 
 <style>
-  h3,
-  p {
+  :global(h3, label, p) {
     font-family: arial;
   }
 </style>

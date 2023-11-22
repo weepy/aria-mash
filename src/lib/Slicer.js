@@ -1,9 +1,11 @@
 import { getRemoteAudio, sliceAudioBuffer, reverseAudioBuffer, playBufferSync, fadeBufferStartAndEnd } from "$lib/utils.js"
 
 export default class Slicer {
-    constructor({ context, url, sliceLength, numSlices }) {
+    constructor({ context, url, sliceLength, numSlices, deltaMode }) {
         this.context = context
         this.sliceLength = Math.floor(sliceLength)
+
+        this.deltaMode = deltaMode
 
         this.slices = []
 
@@ -14,10 +16,14 @@ export default class Slicer {
         for (let i = 0; i < numSlices; i++) {
             // this.slicePositions[i] = i
             this.sliceOptions[i] = {
-                position: i,
+                position: deltaMode ? 0 : i,
                 bank: 0
             }
         }
+
+        this.randomize = 0
+
+        this.createRandomLoop()
     }
 
     async loadUrl(url) {
@@ -45,6 +51,30 @@ export default class Slicer {
 
     }
 
+    createRandomLoop() {
+        this.randomizedOptions = []
+
+
+        const randomLoop = [0, 1, 2, 3].map(o => {
+            return {
+                position: Math.floor(Math.random() * this.sliceOptions.length),
+                bank: Math.floor(Math.random() * 6),
+            }
+        })
+
+        this.randomizedOptions = this.sliceOptions.map((o, index) => {
+            if (Math.random() < this.randomize) {
+                console.log(1)
+                return randomLoop[index % randomLoop.length]
+            }
+            else {
+                console.log(0)
+                return o
+            }
+        })
+
+    }
+
     play() {
 
         this.playing = true
@@ -66,7 +96,8 @@ export default class Slicer {
             this.slicePos = 0
         }
 
-        const sliceOptions = this.sliceOptions[this.slicePos]
+
+        const sliceOptions = this.randomizedOptions[this.slicePos]
 
         const bank = sliceOptions.bank
 
@@ -83,7 +114,8 @@ export default class Slicer {
         const reverse = optsLookUp[bank].reverse
 
         const sliceBank = reverse ? this.rev_slices : this.slices
-        const slice = sliceBank[sliceOptions.position]
+        const pos = sliceOptions.position + (this.deltaMode ? this.slicePos : 0)
+        const slice = sliceBank[(pos + sliceBank.length) % sliceBank.length]
 
         this.playerNode = playBufferSync(this.context, slice, speed, () => {
             this.slicePos += 1
